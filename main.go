@@ -1,123 +1,63 @@
 package main
 
 import (
-	"fmt"
-	"html/template"
-	"os"
+	template "html/template"
+	os "os"
 )
 
-const url = "localhost:3004"
-
-type Film struct {
-	Title    string
-	Director string
-}
-type Films []Film
-
-type Films2 map[string][]struct {
-	Director string
-	Title    struct {
-		Uk string
-		Fr string
-	}
-}
-
-var films2 = Films2{
-	"Films": {
-		{
-			Director: "asd",
-			Title: struct {
-				Uk string
-				Fr string
-			}{
-				Uk: "asd",
-				Fr: "123",
-			},
-		},
-	},
-}
-
-type ComplexFilmsTitle struct {
-	Uk string
-	Fr string
-}
-type ComplexFilms struct {
-	Title ComplexFilmsTitle
-}
-
-func complexMapOfStructsTemplate() {
-	var films = ComplexFilms{
-		Title: ComplexFilmsTitle{
-			Uk: "asd",
-			Fr: "123",
-		},
-	}
-
-	t, err := template.New("asd").Parse(`{{range .Films}}{{.Title}}{{end}}`)
+func htmxify(inputStr string, data any) error {
+	tmpl, err := template.New("test").Parse(inputStr)
 	if err != nil {
-		panic(err)
+		return err
 	}
-	err = t.Execute(os.Stdout, films)
+
+	err = tmpl.Execute(os.Stdout, data)
 	if err != nil {
-		fmt.Println("executing template:", err)
+		return err
 	}
+	return nil
 }
 
-func simpleStructTemplate() {
-	fmt.Println("simpleStructTemplate")
-
+func simpleStructTemplate() error {
 	type TData struct {
 		Title       string
 		ReleaseYear int
 	}
 
 	data := TData{Title: "Shawshank Redemption", ReleaseYear: 1991}
-
-	tmpl, err := template.New("test").Parse("{{.Title}} was released on {{.ReleaseYear}}")
-	if err != nil {
-		panic(err)
-	}
-
-	err = tmpl.Execute(os.Stdout, data)
-	if err != nil {
-		panic(err)
-	}
+	return htmxify("{{.Title}} was released on {{.ReleaseYear}}", data)
 }
 
-func mapOfStructsTemplate() {
-	films := map[string]Films{
-		"Films": {
-			{Title: "a", Director: "asd"},
-			{Title: "b", Director: "asd"},
-		},
-	}
-	t, err := template.New("asd").Parse(`{{range .Films}}{{.Title}}{{end}}`)
-	if err != nil {
-		panic(err)
-	}
-	err = t.Execute(os.Stdout, films)
-	if err != nil {
-		fmt.Println("executing template:", err)
-	}
-}
-
-func stringArrayTemplate() {
+func arrayOfStringsTemplate() error {
 	salutationsSlice := []string{`hi`, `bye`, `cya`}
 	templateString := `{{range .}}{{.}}
 
 {{end}}`
 
-	template1, err := template.New("asd").Parse(templateString)
-	if err != nil {
-		panic(err)
-	}
-	err = template1.Execute(os.Stdout, salutationsSlice)
-	if err != nil {
-		fmt.Println("executing template:", err)
-	}
+	return htmxify(templateString, salutationsSlice)
 }
 
-func simpleMapOfStructsTemplate() {
+func structWithinStructTemplate() error {
+	type FilmTitles struct {
+		Uk string
+		Fr string
+	}
+	type Films struct {
+		Title FilmTitles
+	}
+	var films = Films{
+		Title: FilmTitles{
+			Uk: "asd",
+			Fr: "123",
+		},
+	}
+
+	const inputStr = `- Uk: {{.Title.Uk}}, Fr: {{.Title.Fr}}
+`
+	return htmxify(inputStr, films)
+}
+
+func arrayOfStructsTemplate() error {
 	tournaments := []struct {
 		Place string
 		Date  string
@@ -126,32 +66,73 @@ func simpleMapOfStructsTemplate() {
 		{Place: "Town2", Date: "02"},
 		{Place: "Town3", Date: "03"},
 	}
-	t, err := template.New("").Parse(`{{range .}}
-			{{.Place}}: {{.Date}}
-    {{end}}`)
+
+	templateString := `{{range .}}
+		{{.Place}}: {{.Date}}
+	{{end}}`
+
+	return htmxify(templateString, tournaments)
+}
+
+func arrayofStructsWithinStructTemplate() error {
+	type FilmTitles []struct {
+		Uk string
+		Fr string
+	}
+	type Films struct {
+		Title FilmTitles
+	}
+	var films = Films{
+		Title: FilmTitles{
+			{Uk: "the", Fr: "le"},
+			{Uk: "because", Fr: "parceque"},
+		},
+	}
+	const templateString = `{{range .Title}}
+- Uk: {{.Uk}}
+- Fr: {{.Fr}}
+{{end}}
+	`
+
+	return htmxify(templateString, films)
+}
+
+func structuredPanic(err error) {
 	if err != nil {
 		panic(err)
-	}
-	err = t.Execute(os.Stdout, tournaments)
-	if err != nil {
-		fmt.Println("executing template:", err)
 	}
 }
 
 func main() {
 	if false {
-		simpleStructTemplate()
+		structuredPanic(simpleStructTemplate())
 	}
 
 	if false {
-		mapOfStructsTemplate()
-	}
-
-	if true {
-		stringArrayTemplate()
+		err := arrayOfStringsTemplate()
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	if false {
-		simpleMapOfStructsTemplate()
+		err := structWithinStructTemplate()
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	if false {
+		err := arrayOfStructsTemplate()
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	if !false {
+		err := arrayofStructsWithinStructTemplate()
+		if err != nil {
+			panic(err)
+		}
 	}
 }
