@@ -5,7 +5,7 @@ import (
 	os "os"
 )
 
-func htmxify(inputStr string, data any) error {
+func templatify(inputStr string, data any) error {
 	tmpl, err := template.New("test").Parse(inputStr)
 	if err != nil {
 		return err
@@ -25,7 +25,7 @@ func simpleStructTemplate() error {
 	}
 
 	data := TData{Title: "Shawshank Redemption", ReleaseYear: 1991}
-	return htmxify("{{.Title}} was released on {{.ReleaseYear}}", data)
+	return templatify("{{.Title}} was released on {{.ReleaseYear}}", data)
 }
 
 func arrayOfStringsTemplate() error {
@@ -34,7 +34,7 @@ func arrayOfStringsTemplate() error {
 
 {{end}}`
 
-	return htmxify(templateString, salutationsSlice)
+	return templatify(templateString, salutationsSlice)
 }
 
 func structWithinStructTemplate() error {
@@ -54,7 +54,7 @@ func structWithinStructTemplate() error {
 
 	const inputStr = `- Uk: {{.Title.Uk}}, Fr: {{.Title.Fr}}
 `
-	return htmxify(inputStr, films)
+	return templatify(inputStr, films)
 }
 
 func arrayOfStructsTemplate() error {
@@ -71,7 +71,7 @@ func arrayOfStructsTemplate() error {
 		{{.Place}}: {{.Date}}
 	{{end}}`
 
-	return htmxify(templateString, tournaments)
+	return templatify(templateString, tournaments)
 }
 
 func arrayofStructsWithinStructTemplate() error {
@@ -94,7 +94,7 @@ func arrayofStructsWithinStructTemplate() error {
 {{end}}
 	`
 
-	return htmxify(templateString, films)
+	return templatify(templateString, films)
 }
 
 func structuredPanic(err error) {
